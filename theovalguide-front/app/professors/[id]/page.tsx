@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { z } from "zod";
+
 import ResultsClient from "./results-client";
 
 // Zod schemas
@@ -28,7 +29,7 @@ const ProfessorResultSchema = z.object({
   reviews: z.array(ReviewSchema),
 });
 export type ProfessorResult = z.infer<typeof ProfessorResultSchema>;
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 async function getBaseUrl() {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
@@ -44,10 +45,8 @@ async function getBaseUrl() {
 export default async function Page({ params }: Params) {
   // MOCK: keep this while backend is not ready
   const base = getBaseUrl();
-  const url = new URL(
-    `/api/professors/${encodeURIComponent(params.id)}`,
-    await base,
-  ).toString();
+  const { id } = await params;
+  const url = new URL(`/api/professors/${encodeURIComponent(id)}`, await base).toString();
 
   // uncomment this when backend is live, remove the mock block above
   // const api = process.env.NEXT_PUBLIC_API_URL;

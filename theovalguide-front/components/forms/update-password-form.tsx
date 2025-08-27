@@ -1,23 +1,18 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useMemo, useState } from "react";
-import axios from "axios";
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import { cn } from "@/lib/utils";
 
 /* ---------- Schema ---------- */
 const updatePasswordSchema = z
@@ -69,10 +64,7 @@ function getErrorMessage(err: unknown): string {
 }
 
 /* ---------- Component ---------- */
-export function UpdatePasswordForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+export function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = useMemo(() => searchParams.get("token"), [searchParams]);
@@ -121,25 +113,16 @@ export function UpdatePasswordForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="rounded-2xl shadow-sm bg-card text-foreground">
+      <Card className="bg-card text-foreground rounded-2xl shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Reset your password</CardTitle>
-          <CardDescription>
-            Please enter your new password below.
-          </CardDescription>
+          <CardDescription>Please enter your new password below.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            <fieldset
-              className="flex flex-col gap-6"
-              disabled={isLoading || tokenMissing}
-            >
+            <fieldset className="flex flex-col gap-6" disabled={isLoading || tokenMissing}>
               {tokenMissing && (
-                <p
-                  className="text-sm text-red-500"
-                  role="alert"
-                  aria-live="polite"
-                >
+                <p className="text-sm text-red-500" role="alert" aria-live="polite">
                   Reset token not found. Please use the link from your email.
                 </p>
               )}
@@ -152,21 +135,14 @@ export function UpdatePasswordForm({
                   type="password"
                   placeholder="New password"
                   aria-invalid={!!errors.password}
-                  className="
-                    bg-card text-foreground border border-border
-                    placeholder:text-muted-foreground
-                    focus:ring-1 ring-brand focus:border-[var(--brand)]
-                  "
+                  className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-500">
-                    {errors.password.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.password.message}</p>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  At least 8 characters, with upper &amp; lower case letters and
-                  a number.
+                <p className="text-muted-foreground text-xs">
+                  At least 8 characters, with upper &amp; lower case letters and a number.
                 </p>
               </div>
 
@@ -178,33 +154,23 @@ export function UpdatePasswordForm({
                   type="password"
                   placeholder="Repeat password"
                   aria-invalid={!!errors.repeatPassword}
-                  className="
-                    bg-card text-foreground border border-border
-                    placeholder:text-muted-foreground
-                    focus:ring-1 ring-brand focus:border-[var(--brand)]
-                  "
+                  className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                   {...register("repeatPassword")}
                 />
                 {errors.repeatPassword && (
-                  <p className="text-sm text-red-500">
-                    {errors.repeatPassword.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.repeatPassword.message}</p>
                 )}
               </div>
 
               {submitError && (
-                <p
-                  className="text-sm text-red-500"
-                  role="alert"
-                  aria-live="polite"
-                >
+                <p className="text-sm text-red-500" role="alert" aria-live="polite">
                   {submitError}
                 </p>
               )}
 
               <Button
                 type="submit"
-                className="w-full bg-brand hover:bg-brand-darker text-[var(--brand-contrast)]"
+                className="bg-brand hover:bg-brand-darker w-full text-[var(--brand-contrast)]"
               >
                 {isLoading ? "Saving..." : "Save new password"}
               </Button>

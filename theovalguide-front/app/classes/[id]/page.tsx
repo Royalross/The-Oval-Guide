@@ -1,9 +1,10 @@
 // app/classes/[id]/page.tsx
 import { notFound } from "next/navigation";
 import { z } from "zod";
+
 import ResultsClient from "./results-client";
 
-/* ------------------ Zod schema for API payload ------------------ */
+// Zod schema
 const ProfessorSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -50,28 +51,26 @@ const ClassResultSchema = z.object({
 
 export type ClassResult = z.infer<typeof ClassResultSchema>;
 
-type Params = { params: { id: string } };
+// type Params = { params: { id: string } };
 
 function getBaseUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  );
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }
 
-export default async function Page({ params }: Params) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const base = getBaseUrl();
+  const { id } = await params;
 
   /* ------------------------------------------------------------------
-   * OPTION 1 (default for now): point to local mock route
+   * 1 for now: point to local mock route
    * → /app/api/classes/[id]/route.ts
    * Comment this out when backend is live.
    * ------------------------------------------------------------------ */
-  const url = `${base}/api/classes/${encodeURIComponent(params.id)}`;
+  const url = `${base}/api/classes/${encodeURIComponent(id)}`;
 
   /* ------------------------------------------------------------------
-   * OPTION 2: real backend API call (uncomment when backend is up)
-   * Make sure NEXT_PUBLIC_API_URL is set in your .env.local file, e.g.:
+   * real backend API call (uncomment when backend is up)
+   * Make sure NEXT_PUBLIC_API_URL is set in your .env.local file :
    * NEXT_PUBLIC_API_URL="http://localhost:4000"  or prod URL
    *
    * const url = `${process.env.NEXT_PUBLIC_API_URL}/classes/${encodeURIComponent(params.id)}`;

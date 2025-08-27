@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { cx } from "./ui-helpers";
+
 import LogoMark from "@/components/brand/logo-mark";
+
+import { cx } from "./ui-helpers";
 
 export default function StickyNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -24,7 +26,7 @@ export default function StickyNav() {
       role="navigation"
       aria-label="Primary"
     >
-      <div className="container-responsive h-14 flex items-center gap-3">
+      <div className="container-responsive flex h-14 items-center gap-3">
         {/* Left: Brand icon  */}
         <Link href="/" className="flex items-center gap-2">
           <LogoMark className="h-6 w-6" />
@@ -34,33 +36,19 @@ export default function StickyNav() {
         </Link>
 
         {/* Center: Search */}
-        <form
-          className="mx-3 hidden md:block grow"
-          onSubmit={(e) => e.preventDefault()}
-        >
+        <form className="mx-3 hidden grow md:block" onSubmit={(e) => e.preventDefault()}>
           <div className="relative">
             <input
               type="search"
               placeholder="Search professors, courses…"
-              className="
-                w-full rounded-full
-                bg-card text-foreground border border-border
-                placeholder:text-muted-foreground
-                pl-11 pr-28 py-2.5 text-sm shadow-sm
-                focus:outline-none focus:ring-1 ring-brand focus:border-[var(--brand)]
-              "
+              className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand w-full rounded-full border py-2.5 pr-28 pl-11 text-sm shadow-sm focus:border-[var(--brand)] focus:ring-1 focus:outline-none"
             />
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 -translate-y-1/2">
               🔎
             </span>
             <button
               type="submit"
-              className="
-                absolute right-1.5 top-1/2 -translate-y-1/2
-                rounded-full px-4 py-1.5 text-sm font-medium
-                bg-brand hover:bg-brand-darker text-[var(--brand-contrast)]
-                focus:outline-none focus:ring-2 ring-brand
-              "
+              className="bg-brand hover:bg-brand-darker ring-brand absolute top-1/2 right-1.5 -translate-y-1/2 rounded-full px-4 py-1.5 text-sm font-medium text-[var(--brand-contrast)] focus:ring-2 focus:outline-none"
             >
               Search
             </button>
@@ -71,13 +59,13 @@ export default function StickyNav() {
         <nav className="ml-auto flex items-center gap-2">
           <Link
             href="/auth/sign-in"
-            className="px-3 py-1.5 rounded-md border border-border bg-card hover:bg-muted/70 focus:outline-none focus:ring-2 ring-brand text-sm"
+            className="border-border bg-card hover:bg-muted/70 ring-brand rounded-md border px-3 py-1.5 text-sm focus:ring-2 focus:outline-none"
           >
             Sign in
           </Link>
           <Link
             href="/auth/sign-up"
-            className="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-darker text-[var(--brand-contrast)] focus:outline-none focus:ring-2 ring-brand text-sm font-semibold"
+            className="bg-brand hover:bg-brand-darker ring-brand rounded-md px-3 py-1.5 text-sm font-semibold text-[var(--brand-contrast)] focus:ring-2 focus:outline-none"
           >
             Sign up
           </Link>
@@ -85,32 +73,21 @@ export default function StickyNav() {
       </div>
 
       {/* Mobile friendly search */}
-      <div className="md:hidden border-t border-border">
+      <div className="border-border border-t md:hidden">
         <div className="container-responsive py-2">
           <form onSubmit={(e) => e.preventDefault()}>
             <div className="relative">
               <input
                 type="search"
                 placeholder="Search professors, courses…"
-                className="
-                  w-full rounded-full
-                  bg-card text-foreground border border-border
-                  placeholder:text-muted-foreground
-                  pl-11 pr-24 py-2 text-sm
-                  focus:outline-none focus:ring-1 ring-brand focus:border-[var(--brand)]
-                "
+                className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand w-full rounded-full border py-2 pr-24 pl-11 text-sm focus:border-[var(--brand)] focus:ring-1 focus:outline-none"
               />
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 -translate-y-1/2">
                 🔎
               </span>
               <button
                 type="submit"
-                className="
-                  absolute right-1 top-1/2 -translate-y-1/2
-                  rounded-full px-3 py-1 text-xs font-medium
-                  bg-brand hover:bg-brand-darker text-[var(--brand-contrast)]
-                  focus:outline-none focus:ring-2 ring-brand
-                "
+                className="bg-brand hover:bg-brand-darker ring-brand absolute top-1/2 right-1 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-medium text-[var(--brand-contrast)] focus:ring-2 focus:outline-none"
               >
                 Search
               </button>

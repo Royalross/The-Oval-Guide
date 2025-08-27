@@ -5,15 +5,15 @@ import Link from "next/link";
 export default function NotesCta({ hasNotes }: { hasNotes: boolean }) {
   if (!hasNotes) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="border-border bg-card rounded-2xl border p-4 shadow-sm">
         <h3 className="text-sm font-semibold">Shared Notes</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-2 text-sm">
           Sign in to view and upload notes for this course.
         </p>
         <div className="mt-3">
           <Link
             href="/auth/sign-in"
-            className="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-darker text-[var(--brand-contrast)] text-sm font-semibold"
+            className="bg-brand hover:bg-brand-darker rounded-md px-3 py-1.5 text-sm font-semibold text-[var(--brand-contrast)]"
           >
             Sign in
           </Link>

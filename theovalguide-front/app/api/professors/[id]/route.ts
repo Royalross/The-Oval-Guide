@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+
+import type { NextRequest } from "next/server";
 
 // Same structure your page validates with Zod
 function mockProfessor(id: string) {
@@ -41,8 +43,7 @@ function mockProfessor(id: string) {
         course: "CS 3300",
         date: "2025-02-03",
         rating: 4,
-        comment:
-          "Tests are tough but fair—study the concepts. Projects are a bit time-consuming.",
+        comment: "Tests are tough but fair—study the concepts. Projects are a bit time-consuming.",
         tags: ["TEST HEAVY"],
       },
       {
@@ -51,8 +52,7 @@ function mockProfessor(id: string) {
         course: "CS 1100",
         date: "2024-11-20",
         rating: 3,
-        comment:
-          "Grading feels strict on deadlines. Otherwise good explanations and examples.",
+        comment: "Grading feels strict on deadlines. Otherwise good explanations and examples.",
         tags: ["HARD GRADER"],
       },
     ],

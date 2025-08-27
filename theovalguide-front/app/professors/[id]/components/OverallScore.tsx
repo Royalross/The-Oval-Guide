@@ -14,13 +14,13 @@ export default function OverallScore({
   overall: number;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm flex items-center gap-5">
-      <div className="grid place-items-center h-16 w-16 rounded-xl bg-brand text-[var(--brand-contrast)]">
+    <div className="border-border bg-card flex items-center gap-5 rounded-2xl border p-6 shadow-sm">
+      <div className="bg-brand grid h-16 w-16 place-items-center rounded-xl text-[var(--brand-contrast)]">
         <span className="text-xl font-bold">{overall.toFixed(1)}</span>
       </div>
       <div className="min-w-0">
-        <h1 className="text-xl md:text-2xl font-semibold truncate">{name}</h1>
-        <p className="text-sm text-muted-foreground truncate">
+        <h1 className="truncate text-xl font-semibold md:text-2xl">{name}</h1>
+        <p className="text-muted-foreground truncate text-sm">
           {dept} • {uni}
         </p>
         <div className="mt-1">

@@ -4,17 +4,14 @@ export default function StarRow({ rating }: { rating: number }) {
   const full = Math.floor(rating);
   const half = rating - full >= 0.5;
   return (
-    <div
-      className="inline-flex items-center gap-1"
-      aria-label={`${rating} out of 5`}
-    >
+    <div className="inline-flex items-center gap-1" aria-label={`${rating} out of 5`}>
       {Array.from({ length: 5 }).map((_, i) => {
         const isFull = i < full;
         const isHalf = !isFull && i === full && half;
         return (
           <svg
             key={i}
-            className="h-4 w-4 text-brand"
+            className="text-brand h-4 w-4"
             viewBox="0 0 24 24"
             fill={isFull ? "currentColor" : "none"}
             stroke="currentColor"

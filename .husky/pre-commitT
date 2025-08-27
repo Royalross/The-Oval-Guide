@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+set -e
+
+# Run lint-staged in the frontend
+if [ -d "theovalguide-front" ]; then
+  echo "→ running lint-staged in theovalguide-front"
+  pnpm -C theovalguide-front exec lint-staged
+fi

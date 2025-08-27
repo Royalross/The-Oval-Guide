@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { ClassResult } from "./page";
 
-import StickyNav from "./components/StickyNav";
-import ClassHeader from "./components/ClassHeader";
-import SummaryCard from "./components/SummaryCard";
-import DistributionCard, { Bucket } from "./components/DistributionCard";
-import TagPills from "./components/TagPills";
-import ProfessorsList from "./components/ProfessorsList";
 import AdviceList from "./components/AdviceList";
+import ClassHeader from "./components/ClassHeader";
+import DistributionCard from "./components/DistributionCard";
 import NotesCta from "./components/NotesCta";
+import ProfessorsList from "./components/ProfessorsList";
+import StickyNav from "./components/StickyNav";
+import SummaryCard from "./components/SummaryCard";
+import TagPills from "./components/TagPills";
+
+import type { Bucket } from "./components/DistributionCard";
+import type { ClassResult } from "./page";
 
 export default function ResultsClient({ initial }: { initial: ClassResult }) {
   const [data, setData] = useState<ClassResult>(initial);
@@ -19,17 +21,14 @@ export default function ResultsClient({ initial }: { initial: ClassResult }) {
     try {
       const api = process.env.NEXT_PUBLIC_API_URL;
       if (!api) return;
-      const res = await fetch(
-        `${api}/classes/${encodeURIComponent(data.id)}/summary`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
+      const res = await fetch(`${api}/classes/${encodeURIComponent(data.id)}/summary`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+      });
       if (res.ok) {
         const json: unknown = await res.json();
         const summary =
@@ -50,13 +49,13 @@ export default function ResultsClient({ initial }: { initial: ClassResult }) {
   const totalFor = (b?: Bucket[]) => (b ?? []).reduce((s, x) => s + x.count, 0);
 
   return (
-    <div className="min-h-[100svh] bg-background text-foreground">
+    <div className="bg-background text-foreground min-h-[100svh]">
       <StickyNav />
 
-      <main className="container-responsive py-6 md:py-8 grid gap-6 md:gap-8">
+      <main className="container-responsive grid gap-6 py-6 md:gap-8 md:py-8">
         {/* Header section */}
         <section className="grid gap-6 md:grid-cols-12">
-          <div className="md:col-span-8 space-y-4">
+          <div className="space-y-4 md:col-span-8">
             <ClassHeader
               code={data.code}
               title={data.title}
@@ -67,7 +66,7 @@ export default function ResultsClient({ initial }: { initial: ClassResult }) {
             <SummaryCard text={data.summary} onRefresh={refreshSummary} />
           </div>
 
-          <aside className="md:col-span-4 space-y-4">
+          <aside className="space-y-4 md:col-span-4">
             {data.gradeBuckets?.length ? (
               <DistributionCard
                 title="Grade distribution"
@@ -90,20 +89,19 @@ export default function ResultsClient({ initial }: { initial: ClassResult }) {
 
         {/* Body */}
         <section className="grid gap-4 md:grid-cols-12">
-          <div className="md:col-span-8 space-y-4">
+          <div className="space-y-4 md:col-span-8">
             <ProfessorsList profs={data.professors} />
             <AdviceList advices={data.advices} />
           </div>
 
           {/* Right rail */}
           <div className="md:col-span-4">
-            <div className="md:sticky md:top-20 space-y-4">
+            <div className="space-y-4 md:sticky md:top-20">
               <NotesCta hasNotes={Boolean(data.notes?.length)} />
-              <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+              <div className="border-border bg-card rounded-2xl border p-4 shadow-sm">
                 <h3 className="text-sm font-semibold">About this page</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  This is a preauth view. Advice and notes appear here for
-                  signed-in users.
+                <p className="text-muted-foreground mt-2 text-sm">
+                  This is a preauth view. Advice and notes appear here for signed-in users.
                 </p>
               </div>
             </div>

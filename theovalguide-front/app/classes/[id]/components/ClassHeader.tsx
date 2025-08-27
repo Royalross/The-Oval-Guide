@@ -17,13 +17,13 @@ export default function ClassHeader({
   difficulty: number | null | undefined;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm flex items-center gap-5">
+    <div className="border-border bg-card flex items-center gap-5 rounded-2xl border p-6 shadow-sm">
       <MetricBadge value={difficulty} />
       <div className="min-w-0">
-        <h1 className="text-xl md:text-2xl font-semibold truncate">
+        <h1 className="truncate text-xl font-semibold md:text-2xl">
           {code} • {title}
         </h1>
-        <p className="text-sm text-muted-foreground truncate">
+        <p className="text-muted-foreground truncate text-sm">
           {dept} • {uni}
         </p>
         <div className="mt-1">

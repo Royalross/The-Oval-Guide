@@ -7,10 +7,7 @@ type Props = {
   title?: string;
 };
 
-export default function LogoWordmark({
-  className,
-  title = "The Oval Guide",
-}: Props) {
+export default function LogoWordmark({ className, title = "The Oval Guide" }: Props) {
   return (
     <div className={className}>
       {/* The “O” mark */}
@@ -41,22 +38,13 @@ export default function LogoWordmark({
           strokeWidth="10"
         />
         {/* Red inner “O” */}
-        <rect
-          x="30"
-          y="25"
-          rx="26"
-          ry="26"
-          width="100"
-          height="70"
-          fill="url(#o-fill)"
-        />
+        <rect x="30" y="25" rx="26" ry="26" width="100" height="70" fill="url(#o-fill)" />
       </svg>
 
       {/* Wordmark (text) */}
       <div className="mt-3 text-center leading-tight">
         <span className="block text-2xl font-semibold tracking-tight sm:text-3xl">
-          <span className="text-foreground/90">The</span>{" "}
-          <span className="text-brand">Oval</span>{" "}
+          <span className="text-foreground/90">The</span> <span className="text-brand">Oval</span>{" "}
           <span className="text-foreground/90">Guide</span>
         </span>
       </div>

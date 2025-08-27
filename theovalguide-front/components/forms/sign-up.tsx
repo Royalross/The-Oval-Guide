@@ -1,24 +1,19 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import axios from "axios";
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import { cn } from "@/lib/utils";
 
 /* ---------- Zod schema ---------- */
 const signUpSchema = z
@@ -27,10 +22,7 @@ const signUpSchema = z
       .string()
       .min(3, "Username must be at least 3 characters")
       .max(32, "Username must be at most 32 characters")
-      .regex(
-        /^[a-zA-Z0-9._-]+$/,
-        "Only letters, numbers, dots, underscores, and hyphens",
-      ),
+      .regex(/^[a-zA-Z0-9._-]+$/, "Only letters, numbers, dots, underscores, and hyphens"),
     email: z.string().email("Enter a valid email address"),
     schoolEmail: z
       .string()
@@ -82,10 +74,7 @@ function getErrorMessage(err: unknown): string {
   }
 }
 
-export function SignUpForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -135,7 +124,7 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="rounded-2xl shadow-sm bg-card text-foreground">
+      <Card className="bg-card text-foreground rounded-2xl shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Sign up</CardTitle>
           <CardDescription>Create a new account</CardDescription>
@@ -151,17 +140,11 @@ export function SignUpForm({
                   type="text"
                   placeholder="your username"
                   aria-invalid={!!errors.username}
-                  className="
-                    bg-card text-foreground border border-border
-                    placeholder:text-muted-foreground
-                    focus:ring-1 ring-brand focus:border-[var(--brand)]
-                  "
+                  className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                   {...register("username")}
                 />
                 {errors.username && (
-                  <p className="text-sm text-red-500">
-                    {errors.username.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.username.message}</p>
                 )}
               </div>
 
@@ -173,23 +156,17 @@ export function SignUpForm({
                   type="email"
                   placeholder="m@example.com"
                   aria-invalid={!!errors.email}
-                  className="
-                    bg-card text-foreground border border-border
-                    placeholder:text-muted-foreground
-                    focus:ring-1 ring-brand focus:border-[var(--brand)]
-                  "
+                  className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                   {...register("email")}
                 />
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
-                )}
+                {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
               </div>
 
               {/* School Email (sent for verification, not persisted) */}
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="schoolEmail">School Email</Label>
-                  <span className="ml-auto inline-block text-sm text-muted-foreground">
+                  <span className="text-muted-foreground ml-auto inline-block text-sm">
                     Used to verify — not stored
                   </span>
                 </div>
@@ -198,17 +175,11 @@ export function SignUpForm({
                   type="email"
                   placeholder="name@osu.edu"
                   aria-invalid={!!errors.schoolEmail}
-                  className="
-                    bg-card text-foreground border border-border
-                    placeholder:text-muted-foreground
-                    focus:ring-1 ring-brand focus:border-[var(--brand)]
-                  "
+                  className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                   {...register("schoolEmail")}
                 />
                 {errors.schoolEmail && (
-                  <p className="text-sm text-red-500">
-                    {errors.schoolEmail.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.schoolEmail.message}</p>
                 )}
               </div>
 
@@ -219,17 +190,11 @@ export function SignUpForm({
                   id="password"
                   type="password"
                   aria-invalid={!!errors.password}
-                  className="
-                    bg-card text-foreground border border-border
-                    placeholder:text-muted-foreground
-                    focus:ring-1 ring-brand focus:border-[var(--brand)]
-                  "
+                  className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-500">
-                    {errors.password.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.password.message}</p>
                 )}
               </div>
 
@@ -240,33 +205,23 @@ export function SignUpForm({
                   id="repeatPassword"
                   type="password"
                   aria-invalid={!!errors.repeatPassword}
-                  className="
-                    bg-card text-foreground border border-border
-                    placeholder:text-muted-foreground
-                    focus:ring-1 ring-brand focus:border-[var(--brand)]
-                  "
+                  className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                   {...register("repeatPassword")}
                 />
                 {errors.repeatPassword && (
-                  <p className="text-sm text-red-500">
-                    {errors.repeatPassword.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.repeatPassword.message}</p>
                 )}
               </div>
 
               {submitError && (
-                <p
-                  className="text-sm text-red-500"
-                  role="alert"
-                  aria-live="polite"
-                >
+                <p className="text-sm text-red-500" role="alert" aria-live="polite">
                   {submitError}
                 </p>
               )}
 
               <Button
                 type="submit"
-                className="w-full bg-brand text-[var(--brand-contrast)] hover:bg-brand-darker"
+                className="bg-brand hover:bg-brand-darker w-full text-[var(--brand-contrast)]"
               >
                 {isLoading ? "Creating an account..." : "Sign up"}
               </Button>
@@ -278,10 +233,7 @@ export function SignUpForm({
 
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link
-                href="/auth/sign-in"
-                className="underline underline-offset-4"
-              >
+              <Link href="/auth/sign-in" className="underline underline-offset-4">
                 Login
               </Link>
             </div>

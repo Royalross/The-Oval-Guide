@@ -1,5 +1,7 @@
 // app/api/classes/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+
+import type { NextRequest } from "next/server";
 
 function mockClass(id: string) {
   return {

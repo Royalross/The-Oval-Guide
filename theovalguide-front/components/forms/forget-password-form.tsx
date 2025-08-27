@@ -1,23 +1,18 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Link from "next/link";
 import React, { useState } from "react";
-import axios from "axios";
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import { cn } from "@/lib/utils";
 
 // Schema
 const forgotSchema = z.object({
@@ -57,10 +52,7 @@ function getErrorMessage(err: unknown): string {
 }
 
 /* -------------------- Component -------------------- */
-export function ForgotPasswordForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,33 +98,28 @@ export function ForgotPasswordForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       {success ? (
-        <Card className="rounded-2xl shadow-sm bg-card text-foreground">
+        <Card className="bg-card text-foreground rounded-2xl shadow-sm">
           <CardHeader>
             <CardTitle className="text-2xl">Check your email</CardTitle>
             <CardDescription>Password reset instructions sent</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              If an account exists for that address, you&apos;ll receive a link
-              to reset your password. Be sure to check your spam folder.
+            <p className="text-muted-foreground text-sm">
+              If an account exists for that address, you&apos;ll receive a link to reset your
+              password. Be sure to check your spam folder.
             </p>
             <div className="mt-4">
-              <Link
-                href="/auth/sign-in"
-                className="text-sm underline underline-offset-4"
-              >
+              <Link href="/auth/sign-in" className="text-sm underline underline-offset-4">
                 Return to sign in
               </Link>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <Card className="rounded-2xl shadow-sm bg-card text-foreground">
+        <Card className="bg-card text-foreground rounded-2xl shadow-sm">
           <CardHeader>
             <CardTitle className="text-2xl">Reset your password</CardTitle>
-            <CardDescription>
-              Enter your email and we&apos;ll send you a reset link
-            </CardDescription>
+            <CardDescription>Enter your email and we&apos;ll send you a reset link</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -145,33 +132,21 @@ export function ForgotPasswordForm({
                     type="email"
                     placeholder="m@example.com"
                     aria-invalid={!!errors.email}
-                    className="
-                      bg-card text-foreground border border-border
-                      placeholder:text-muted-foreground
-                      focus:ring-1 ring-brand focus:border-[var(--brand)]
-                    "
+                    className="bg-card text-foreground border-border placeholder:text-muted-foreground ring-brand border focus:border-[var(--brand)] focus:ring-1"
                     {...register("email")}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-500">
-                      {errors.email.message}
-                    </p>
-                  )}
+                  {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
                 </div>
 
                 {submitError && (
-                  <p
-                    className="text-sm text-red-500"
-                    role="alert"
-                    aria-live="polite"
-                  >
+                  <p className="text-sm text-red-500" role="alert" aria-live="polite">
                     {submitError}
                   </p>
                 )}
 
                 <Button
                   type="submit"
-                  className="w-full bg-brand hover:bg-brand-darker text-[var(--brand-contrast)]"
+                  className="bg-brand hover:bg-brand-darker w-full text-[var(--brand-contrast)]"
                 >
                   {isLoading ? "Sending..." : "Send reset email"}
                 </Button>
@@ -179,10 +154,7 @@ export function ForgotPasswordForm({
 
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link
-                  href="/auth/sign-in"
-                  className="underline underline-offset-4"
-                >
+                <Link href="/auth/sign-in" className="underline underline-offset-4">
                   Login
                 </Link>
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -11,12 +12,12 @@ import {
 export default function PreauthNav() {
   return (
     <NavigationMenu>
-      <NavigationMenuList className="gap-3 items-center">
+      <NavigationMenuList className="items-center gap-3">
         {/* Sign in */}
         <NavigationMenuItem>
           <NavigationMenuLink
             asChild
-            className="border rounded-md px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+            className="hover:bg-accent hover:text-accent-foreground rounded-md border px-4 py-2 text-sm font-medium"
           >
             <Link href="/auth/sign-in">Sign in</Link>
           </NavigationMenuLink>
@@ -26,7 +27,7 @@ export default function PreauthNav() {
         <NavigationMenuItem>
           <NavigationMenuLink
             asChild
-            className="bg-[var(--brand)] text-[var(--brand-contrast)] rounded-md px-4 py-2 text-sm font-bold hover:bg-brand-darker"
+            className="hover:bg-brand-darker rounded-md bg-[var(--brand)] px-4 py-2 text-sm font-bold text-[var(--brand-contrast)]"
           >
             <Link href="/auth/sign-up">Sign up</Link>
           </NavigationMenuLink>

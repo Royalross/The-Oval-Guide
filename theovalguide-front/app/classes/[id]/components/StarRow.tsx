@@ -2,11 +2,7 @@
 
 import { isFiniteNumber } from "./ui-helpers";
 
-export default function StarRow({
-  rating,
-}: {
-  rating: number | null | undefined;
-}) {
+export default function StarRow({ rating }: { rating: number | null | undefined }) {
   const r = isFiniteNumber(rating) ? rating : 0;
   const full = Math.floor(r);
   const half = r - full >= 0.5;

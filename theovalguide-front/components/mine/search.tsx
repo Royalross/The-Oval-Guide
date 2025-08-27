@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import axios, { AxiosError } from "axios";
-import React, { useEffect, useRef, useState } from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import Link from "next/link";
+import React, { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import type { AxiosError } from "axios";
 
 /* --------------------- Config --------------------- */
 const MIN_CHARS = 3;
@@ -38,10 +40,7 @@ type SearchResponse = z.infer<typeof SearchResponseSchema>;
 
 /* ------------- Form schema (Enter submit) --------- */
 const searchSchema = z.object({
-  input: z
-    .string()
-    .min(MIN_CHARS, `Enter at least ${MIN_CHARS} characters`)
-    .max(100, "Too long"),
+  input: z.string().min(MIN_CHARS, `Enter at least ${MIN_CHARS} characters`).max(100, "Too long"),
 });
 type SearchValues = z.infer<typeof searchSchema>;
 
@@ -77,10 +76,7 @@ function getErrorMessage(err: unknown): string {
 }
 
 /* ------------- Fetch helper with fallback ---------- */
-async function fetchSearch(
-  q: string,
-  signal?: AbortSignal,
-): Promise<SearchResult[]> {
+async function fetchSearch(q: string, signal?: AbortSignal): Promise<SearchResult[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not defined");
 
@@ -190,8 +186,7 @@ export default function PreauthSearch() {
       } catch (err) {
         // ignore cancels; show other errors
         const isCanceled =
-          axios.isCancel(err) ||
-          (err instanceof Error && err.name === "CanceledError");
+          axios.isCancel(err) || (err instanceof Error && err.name === "CanceledError");
         if (!isCanceled) setError(getErrorMessage(err) || "Search failed");
       } finally {
         setIsTyping(false);
@@ -229,8 +224,7 @@ export default function PreauthSearch() {
       setValue("input", trimmed);
     } catch (err) {
       const isCanceled =
-        axios.isCancel(err) ||
-        (err instanceof Error && err.name === "CanceledError");
+        axios.isCancel(err) || (err instanceof Error && err.name === "CanceledError");
       if (!isCanceled) setError(getErrorMessage(err) || "Search failed");
     } finally {
       setIsLoading(false);
@@ -244,7 +238,7 @@ export default function PreauthSearch() {
           {/* left search icon */}
           <svg
             aria-hidden="true"
-            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+            className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -265,10 +259,7 @@ export default function PreauthSearch() {
             autoComplete="off"
             spellCheck={false}
             aria-invalid={!!errors.input}
-            className="w-full rounded-full border border-border bg-card text-foreground
-                       px-12 pr-32 py-3 text-base shadow-sm
-                       focus:border-[var(--brand)] focus:ring-1 ring-brand
-                       placeholder:text-muted-foreground"
+            className="border-border bg-card text-foreground ring-brand placeholder:text-muted-foreground w-full rounded-full border px-12 py-3 pr-32 text-base shadow-sm focus:border-[var(--brand)] focus:ring-1"
             {...register("input")}
             onChangeCapture={() => setIsTyping(true)}
           />
@@ -276,28 +267,20 @@ export default function PreauthSearch() {
           {/* in-input submit button (right end) */}
           <button
             type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full
-                       bg-[var(--brand)] hover:bg-brand-darker text-[var(--brand-contrast)]
-                       px-5 py-2 text-sm font-medium focus:outline-none focus:ring-2 ring-brand"
+            className="hover:bg-brand-darker ring-brand absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-[var(--brand)] px-5 py-2 text-sm font-medium text-[var(--brand-contrast)] focus:ring-2 focus:outline-none"
           >
             {isLoading ? "Searching…" : "Search"}
           </button>
         </div>
 
-        {errors.input && (
-          <p className="mt-2 text-xs text-red-500">{errors.input.message}</p>
-        )}
+        {errors.input && <p className="mt-2 text-xs text-red-500">{errors.input.message}</p>}
         {(isTyping || isLoading) && !errors.input && (
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-2 text-xs">
             {isLoading ? "Searching…" : `Type at least ${MIN_CHARS} characters`}
           </p>
         )}
         {error && (
-          <p
-            className="mt-2 text-sm text-red-500"
-            role="alert"
-            aria-live="polite"
-          >
+          <p className="mt-2 text-sm text-red-500" role="alert" aria-live="polite">
             {error}
           </p>
         )}
@@ -307,7 +290,7 @@ export default function PreauthSearch() {
       {results && (
         <ul className="mt-5 space-y-2">
           {results.length === 0 && (
-            <li className="rounded-md border border-border bg-card p-3 text-sm text-muted-foreground">
+            <li className="border-border bg-card text-muted-foreground rounded-md border p-3 text-sm">
               No results
             </li>
           )}
@@ -321,34 +304,24 @@ export default function PreauthSearch() {
             return (
               <li
                 key={`${item.kind}-${item.id}`}
-                className="rounded-md border border-border bg-card p-4 hover:bg-muted/70 transition"
+                className="border-border bg-card hover:bg-muted/70 rounded-md border p-4 transition"
               >
                 <Link href={href} className="block">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="truncate text-base font-medium">
-                        {item.title}
-                      </div>
-                      <div className="truncate text-sm text-muted-foreground">
-                        {item.subtitle}
-                      </div>
+                      <div className="truncate text-base font-medium">{item.title}</div>
+                      <div className="text-muted-foreground truncate text-sm">{item.subtitle}</div>
                     </div>
 
                     {/* Right-side metric if available */}
-                    {item.kind === "professor" &&
-                    typeof item.overall === "number" ? (
-                      <div className="grid place-items-center h-12 w-12 rounded-lg bg-brand text-[var(--brand-contrast)] text-sm font-bold">
+                    {item.kind === "professor" && typeof item.overall === "number" ? (
+                      <div className="bg-brand grid h-12 w-12 place-items-center rounded-lg text-sm font-bold text-[var(--brand-contrast)]">
                         {item.overall.toFixed(1)}
                       </div>
-                    ) : item.kind === "class" &&
-                      typeof item.difficulty === "number" ? (
+                    ) : item.kind === "class" && typeof item.difficulty === "number" ? (
                       <div className="text-right">
-                        <div className="text-xs text-muted-foreground">
-                          Difficulty
-                        </div>
-                        <div className="text-sm font-semibold">
-                          {item.difficulty.toFixed(1)}/5
-                        </div>
+                        <div className="text-muted-foreground text-xs">Difficulty</div>
+                        <div className="text-sm font-semibold">{item.difficulty.toFixed(1)}/5</div>
                       </div>
                     ) : null}
                   </div>

@@ -12,15 +12,7 @@ export default function ThemeToggleFab() {
       type="button"
       onClick={() => setTheme(next)}
       aria-label="Toggle theme"
-      className="
-        fixed z-50
-        right-4 bottom-4 sm:right-6 sm:bottom-6
-        grid place-items-center
-        h-11 w-11 rounded-full border border-border
-        bg-card/90 backdrop-blur shadow-lg
-        text-foreground hover:bg-muted/70
-        focus:outline-none focus:ring-2 ring-brand
-      "
+      className="border-border bg-card/90 text-foreground hover:bg-muted/70 ring-brand fixed right-4 bottom-4 z-50 grid h-11 w-11 place-items-center rounded-full border shadow-lg backdrop-blur focus:ring-2 focus:outline-none sm:right-6 sm:bottom-6"
       style={{
         marginRight: "max(env(safe-area-inset-right), 0px)",
         marginBottom: "max(env(safe-area-inset-bottom), 0px)",

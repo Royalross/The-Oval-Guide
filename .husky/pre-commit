@@ -1,0 +1,14 @@
+set -e
+
+echo "husky: pre-commit starting…"
+
+STAGED_FRONTEND_FILES="$(git diff --name-only --cached -- 'theovalguide-front/**' || true)"
+
+if [ -n "$STAGED_FRONTEND_FILES" ]; then
+  echo "→ running lint-staged in theovalguide-front"
+  pnpm -C theovalguide-front exec lint-staged --debug
+else
+  echo "→ no staged files inside theovalguide-front/, skipping lint-staged"
+fi
+
+echo "husky: pre-commit done."
