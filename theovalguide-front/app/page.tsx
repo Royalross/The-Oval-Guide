@@ -1,6 +1,6 @@
 import LogoWordmark from "@/components/brand/LogoWordmark";
 import PreauthNav from "@/components/mine/preauth-nav";
-import Search from "@/components/mine/search";
+import SearchBox from "@/components/search/SearchBox";
 
 export default function Home() {
   return (
@@ -19,7 +19,7 @@ export default function Home() {
           <div className="mt-[8svh] flex w-full flex-col items-center gap-6 sm:mt-[10svh] sm:gap-8">
             <LogoWordmark className="select-none" />
             <div className="w-full max-w-[680px] sm:max-w-2xl lg:max-w-3xl">
-              <Search />
+              <SearchBox />
             </div>
           </div>
         </div>
