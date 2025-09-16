@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 // Schema
 const forgotSchema = z.object({
-  email: z.email("Enter a valid email address"),
+  email: z.string().email("Enter a valid email address"),
 });
 type ForgotValues = z.infer<typeof forgotSchema>;
 
