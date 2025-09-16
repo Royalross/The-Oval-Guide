@@ -18,7 +18,7 @@ const SearchClassHit = z.object({
   id: z.string(), // code, e.g. "CS 2201"
   title: z.string(), // "CS 2201 — Data Structures"
   subtitle: z.string(), // "Computer Science — Ohio State University"
-  difficulty: z.number().optional(),
+  difficulty: z.number().nullish(),
 });
 type SearchClassHit = z.infer<typeof SearchClassHit>;
 
