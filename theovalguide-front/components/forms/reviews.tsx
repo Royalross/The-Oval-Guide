@@ -12,9 +12,28 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 // Zod schema
+const optionalDifficultySchema = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? undefined : value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed === "") return undefined;
+    const parsed = Number(trimmed);
+    return Number.isNaN(parsed) ? value : parsed;
+  }
+
+  return value;
+}, z.number().int().min(1, "Min 1").max(5, "Max 5").optional());
+
 const schema = z.object({
   rating: z.coerce.number().int().min(1, "Min 1").max(5, "Max 5"),
-  difficulty: z.coerce.number().int().min(1, "Min 1").max(5, "Max 5").optional(),
+  difficulty: optionalDifficultySchema,
   comment: z.string().max(500, "Max 500 chars").optional(),
   tags: z.string().optional(),
 });
