@@ -73,8 +73,9 @@ public class ClassQueryService {
         var profBriefs = classProfs.professorsForClass(id).stream()
                 .map(row -> new ClassProfessorBriefDto(
                         row[0].toString(),           // professor id
-                        (String) row[1],             // professor name
-                        (BigDecimal) row[2]          // overall (nullable)
+                        (String) row[1],             // professor slug
+                        (String) row[2],             // professor name
+                        (BigDecimal) row[3]          // overall (nullable)
                 ))
                 .collect(Collectors.toList());
 

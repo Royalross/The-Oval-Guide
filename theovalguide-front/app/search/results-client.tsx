@@ -26,13 +26,22 @@ type SearchItem = z.infer<typeof SearchItemSchema>;
 type Props = {
   initial: {
     q: string;
-    items: SearchItem[];
+    items: unknown[];
     error?: string;
   };
 };
 
 export default function ResultsClient({ initial }: Props) {
-  const { q, items, error } = initial;
+  const { q } = initial;
+  const parsedItems = SearchItemSchema.array().safeParse(initial.items);
+  const items: SearchItem[] = parsedItems.success ? parsedItems.data : [];
+  const error =
+    initial.error ??
+    (!parsedItems.success ? "Search results payload did not match expected schema." : undefined);
+
+  if (!parsedItems.success) {
+    console.error(parsedItems.error);
+  }
 
   return (
     <div className="bg-background text-foreground min-h-[100svh]">
