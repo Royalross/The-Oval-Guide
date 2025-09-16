@@ -91,7 +91,7 @@ export function SignInForm({ className, ...props }: React.ComponentPropsWithoutR
         res.status < 300 &&
         (maybeOk.success ? (maybeOk.data.ok ?? true) : true)
       ) {
-        router.push("/dashboard");
+        router.push("/");
         return;
       }
       throw new Error("Unexpected login response");
