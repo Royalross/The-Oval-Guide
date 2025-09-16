@@ -8,6 +8,7 @@ import ResultsClient from "./results-client";
 const BucketSchema = z.object({ label: z.string(), count: z.number() });
 const ProfessorSchema = z.object({
   id: z.string(),
+  slug: z.string(),
   name: z.string(),
   overall: z.number().nullish(),
 });

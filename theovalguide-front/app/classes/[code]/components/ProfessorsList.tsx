@@ -17,7 +17,10 @@ export default function ProfessorsList({ profs }: { profs: ClassResult["professo
             className="border-border bg-card hover:bg-muted/70 flex items-center justify-between gap-2 rounded-md border p-3"
           >
             <div className="min-w-0">
-              <Link href={`/professors/${p.id}`} className="font-medium hover:underline">
+              <Link
+                href={`/professors/${encodeURIComponent(p.slug)}`}
+                className="font-medium hover:underline"
+              >
                 {p.name}
               </Link>
               {typeof p.overall === "number" && (

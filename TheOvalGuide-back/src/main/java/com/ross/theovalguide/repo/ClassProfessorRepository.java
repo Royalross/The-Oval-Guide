@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface ClassProfessorRepository extends JpaRepository<ClassProfessor, UUID> {
     @Query("""
-            select cp.professor.id, cp.professor.name, cp.professor.overallRating
+            select cp.professor.id, cp.professor.slug, cp.professor.name, cp.professor.overallRating
             from ClassProfessor cp
             where cp.courseClass.id = :classId
             """)
