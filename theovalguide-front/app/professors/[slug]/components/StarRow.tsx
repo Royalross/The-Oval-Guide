@@ -1,17 +1,24 @@
 "use client";
 
-export default function StarRow({ rating }: { rating: number }) {
-  const full = Math.floor(rating);
-  const half = rating - full >= 0.5;
+import { fmt1, isFiniteNumber } from "@/app/classes/[code]/components/ui-helpers";
+
+export default function StarRow({ rating }: { rating: number | null | undefined }) {
+  const hasRating = isFiniteNumber(rating);
+  const value = hasRating ? rating : 0;
+  const full = Math.floor(value);
+  const half = value - full >= 0.5;
+  const aria = hasRating ? `${fmt1(value)} out of 5` : "Not rated yet";
+  const starColor = hasRating ? "text-brand" : "text-muted-foreground/60";
+
   return (
-    <div className="inline-flex items-center gap-1" aria-label={`${rating} out of 5`}>
+    <div className="inline-flex items-center gap-1" aria-label={aria}>
       {Array.from({ length: 5 }).map((_, i) => {
         const isFull = i < full;
         const isHalf = !isFull && i === full && half;
         return (
           <svg
             key={i}
-            className="text-brand h-4 w-4"
+            className={`${starColor} h-4 w-4`}
             viewBox="0 0 24 24"
             fill={isFull ? "currentColor" : "none"}
             stroke="currentColor"
