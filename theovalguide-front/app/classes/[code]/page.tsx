@@ -102,7 +102,7 @@ export default async function Page({ params }: Params) {
   const json = await res.json();
   const parsed = ClassResultSchema.safeParse(json);
   if (!parsed.success) {
-    console.error(z.treeifyError(parsed.error));
+    console.error(parsed.error.format());
     return (
       <div className="bg-background text-foreground min-h-[100svh]">
         <main className="container-responsive py-10">
