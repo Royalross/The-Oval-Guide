@@ -1,6 +1,7 @@
 package com.ross.theovalguide.controllers;
 
 import com.ross.theovalguide.DTOS.review.CreateReviewRequest;
+import com.ross.theovalguide.model.CourseClass;
 import com.ross.theovalguide.model.Review;
 import com.ross.theovalguide.repo.CourseClassRepository;
 import com.ross.theovalguide.repo.ProfessorRepository;
@@ -53,10 +54,33 @@ public class ReviewController {
             review.setProfessor(p);
         }
         if (req.classCode() != null && !req.classCode().isBlank()) {
-            var c = classes.findByCodeIgnoreCase(req.classCode())
-                    .or(() -> classes.findFirstByCodeLoose(req.classCode()))
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "class not found"));
-            review.setCourseClass(c);
+            String classCode = req.classCode().trim();
+            var c = classes.findByCodeIgnoreCase(classCode)
+                    .or(() -> classes.findFirstByCodeLoose(classCode));
+
+            CourseClass courseClass = c.orElseGet(() -> {
+                if (!Boolean.TRUE.equals(req.createIfMissing())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "class not found");
+                }
+
+                String title = req.classTitle() == null ? "" : req.classTitle().trim();
+                String department = req.department() == null ? "" : req.department().trim();
+                String university = req.university() == null ? "" : req.university().trim();
+
+                if (title.isBlank() || department.isBlank() || university.isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "classTitle, department, and university are required when createIfMissing is true");
+                }
+
+                var newClass = new CourseClass();
+                newClass.setCode(classCode);
+                newClass.setTitle(title);
+                newClass.setDepartment(department);
+                newClass.setUniversity(university);
+                return classes.save(newClass);
+            });
+
+            review.setCourseClass(courseClass);
         }
         if (review.getProfessor() == null && review.getCourseClass() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "professorSlug or classCode required");
