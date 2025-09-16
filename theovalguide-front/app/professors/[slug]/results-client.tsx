@@ -15,6 +15,8 @@ import type { ProfessorResult } from "./schema";
 
 export default function ResultsClient({ initial }: { initial: ProfessorResult }) {
   const [data, setData] = useState(initial);
+  const [isRefreshingSummary, setIsRefreshingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   // Ensure we always have a string slug for calls/props
   const slugFromPath = useMemo(() => {
@@ -27,7 +29,13 @@ export default function ResultsClient({ initial }: { initial: ProfessorResult })
   const refreshSummary = async () => {
     try {
       const api = process.env.NEXT_PUBLIC_API_URL;
-      if (!api || !professorSlug) return;
+      if (!api || !professorSlug) {
+        setSummaryError("Summary refresh is not available right now.");
+        return;
+      }
+
+      setIsRefreshingSummary(true);
+      setSummaryError(null);
 
       const res = await fetch(
         `${api}/api/professors/${encodeURIComponent(professorSlug)}/summary`,
@@ -41,12 +49,44 @@ export default function ResultsClient({ initial }: { initial: ProfessorResult })
         },
       );
 
-      if (res.ok) {
-        const { summary } = (await res.json()) as { summary?: string };
-        setData((d) => ({ ...d, summary: String(summary ?? d.summary ?? "") }));
+      if (!res.ok) {
+        let message = `Refresh failed with status ${res.status}.`;
+        try {
+          const text = await res.text();
+          if (text) {
+            try {
+              const parsed = JSON.parse(text) as { message?: unknown };
+              if (typeof parsed?.message === "string") {
+                message = parsed.message;
+              } else {
+                message = text;
+              }
+            } catch {
+              message = text;
+            }
+          }
+        } catch {}
+        setSummaryError(message);
+        return;
       }
-    } catch {
-      // ignore
+
+      const json: unknown = await res.json();
+      if (
+        json &&
+        typeof json === "object" &&
+        "summary" in json &&
+        typeof (json as any).summary === "string"
+      ) {
+        const summary = (json as { summary: string }).summary;
+        setData((d) => ({ ...d, summary }));
+      } else {
+        setSummaryError("The server returned an unexpected response.");
+      }
+    } catch (err) {
+      console.error("Failed to refresh professor summary:", err);
+      setSummaryError("We couldn’t refresh the summary. Please try again later.");
+    } finally {
+      setIsRefreshingSummary(false);
     }
   };
 
@@ -67,7 +107,12 @@ export default function ResultsClient({ initial }: { initial: ProfessorResult })
               overall={data.overall ?? 0}
             />
             {/* text must be a string */}
-            <SummaryCard text={data.summary ?? ""} onRefresh={refreshSummary} />
+            <SummaryCard
+              text={data.summary ?? ""}
+              onRefresh={refreshSummary}
+              isRefreshing={isRefreshingSummary}
+              error={summaryError}
+            />
           </div>
 
           <aside className="space-y-4 md:col-span-4">
