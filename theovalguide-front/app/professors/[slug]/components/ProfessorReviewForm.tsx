@@ -157,7 +157,6 @@ export default function ProfessorReviewForm({
   const mode = watch("classChoice.mode");
   const pickedCode = watch("classChoice.pickedCode") ?? "";
 
-  // ✅ Strongly type your submit handler
   const onSubmit: SubmitHandler<FormValues> = async (v) => {
     setMsg(null);
 
