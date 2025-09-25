@@ -35,7 +35,7 @@ public class Professor extends BaseEntity {
     @Column(length = 100, nullable = false)
     private String university;
 
-    // NUMERIC(3,2) e.g., 4.32
+    // NUMERIC(3,2)  4.32
     @Column(name = "overall_rating", precision = 3, scale = 2)
     private BigDecimal overallRating;
 

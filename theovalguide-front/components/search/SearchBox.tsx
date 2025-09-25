@@ -1,47 +1,78 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 
-import type { SearchItem } from "@/lib/search-types";
-import { SearchResponseSchema } from "@/lib/search-types";
+type SearchItem = {
+  kind: "professor" | "class";
+  id: string;
+  title: string;
+  subtitle: string;
+  overall?: number | null;
+  difficulty?: number | null;
+};
 
-import { cx } from "@/app/classes/[code]/components/ui-helpers";
+/**
+ * A simple utility for conditionally joining class names together.
+ * Replaces the external 'cx' utility.
+ */
+const cx = (...classes: (string | undefined | null | boolean)[]) =>
+  classes.filter(Boolean).join(" ");
 
-/* ----------------------------- small utils ----------------------------- */
-function useDebounced<T>(value: T, ms: number) {
-  const [v, setV] = useState(value);
+/**
+ * A custom hook that delays updating a value until a specified amount of time has passed.
+ * This is essential for preventing API calls on every keystroke in a search input.
+ * @param value The value to debounce.
+ * @param ms The delay in milliseconds.
+ */
+function useDebounced<T>(value: T, ms: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
   useEffect(() => {
-    const t = setTimeout(() => setV(value), ms);
-    return () => clearTimeout(t);
+    // Set a timer to update the debounced value after the specified delay.
+    const timer = setTimeout(() => setDebouncedValue(value), ms);
+    return () => clearTimeout(timer);
   }, [value, ms]);
-  return v;
+
+  return debouncedValue;
 }
-function looksLikeClassCode(s: string) {
+
+/**
+ * Checks if a string looks like a course code (e.g., "CS 101", "MATH241").
+ * Uses a regular expression to match letters followed by optional space and then numbers.
+ */
+function looksLikeClassCode(s: string): boolean {
   return /^[a-zA-Z]+\s*\d+/.test(s.trim());
 }
-function normalizeClassCode(s: string) {
-  const t = s.trim();
-  const withSpace = t.replace(/^([a-zA-Z]+)\s*([0-9].*)$/, "$1 $2");
+
+/**
+ * Normalizes a class code string to a consistent format (e.g., "cs101" -> "CS 101").
+ */
+function normalizeClassCode(s: string): string {
+  const trimmed = s.trim();
+  // Inserts a space between the department code and the course number if missing.
+  const withSpace = trimmed.replace(/^([a-zA-Z]+)\s*([0-9].*)$/, "$1 $2");
   return withSpace.toUpperCase();
 }
-function safeEncodeSegment(id: string) {
+
+/**
+ * Safely encodes a string segment for use in a URL, handling cases where it might already be encoded.
+ */
+function safeEncodeSegment(id: string): string {
   let raw = id;
+  // Try to decode the segment first. If it succeeds and is different, it means the string
+  // was already encoded, so we use the decoded version to prevent double-encoding.
   try {
     const maybeDecoded = decodeURIComponent(id);
     if (maybeDecoded !== id) raw = maybeDecoded;
   } catch {
-    // keep raw
+    // If decoding fails, it's not a valid URI component, so we use the raw string.
   }
   return encodeURIComponent(raw);
 }
 
-/* ----------------------------- SearchBox ----------------------------- */
-/** Matches the *old* visual: left SVG icon, big rounded input (px-12 py-3 pr-32 text-base),
- *  right pill button inside the input.
- *
- *  You can still override outer wrappers with `className`, but the input/button look stays classic.
+/**
+ * A client-side component providing a real-time search input with a dropdown of results.
+ * It includes debouncing, keyboard navigation, and aborts stale requests.
  */
 export default function SearchBox({
   className,
@@ -52,134 +83,154 @@ export default function SearchBox({
   minChars?: number;
   debounceMs?: number;
 }) {
-  const router = useRouter();
-  const api = process.env.NEXT_PUBLIC_API_URL!;
-  const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<SearchItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
-  const abortRef = useRef<AbortController | null>(null);
-  const wrapRef = useRef<HTMLDivElement | null>(null);
 
-  const debouncedQ = useDebounced(q, debounceMs);
+  const debouncedQuery = useDebounced(query, debounceMs);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // close popover on outside click
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL!;
+
   useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
     };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  // fetch on type
+  // Effect to fetch search results when the debounced query changes.
   useEffect(() => {
-    if (!api) return;
-    const query = debouncedQ.trim();
-    if (query.length < minChars) {
+    const trimmedQuery = debouncedQuery.trim();
+
+    if (trimmedQuery.length < minChars) {
       setItems([]);
-      setOpen(false);
-      setLoading(false);
+      setIsOpen(false);
+      setIsLoading(false);
       return;
     }
 
-    // cancel previous
-    if (abortRef.current) abortRef.current.abort();
+    // Cancel any previous, ongoing fetch request to prevent race conditions.
+    abortControllerRef.current?.abort();
     const controller = new AbortController();
-    abortRef.current = controller;
+    abortControllerRef.current = controller;
 
-    (async () => {
+    const fetchSearchResults = async () => {
+      setIsLoading(true);
       try {
-        setLoading(true);
-        const url = new URL("/api/search", api);
-        url.searchParams.set("q", query);
+        const url = new URL("/api/search", apiBaseUrl);
+        url.searchParams.set("q", trimmedQuery);
         const res = await fetch(url.toString(), {
-          method: "GET",
           headers: { Accept: "application/json" },
           cache: "no-store",
           signal: controller.signal,
         });
-        if (!res.ok) throw new Error(String(res.status));
+
+        if (!res.ok) throw new Error(`API Error: ${res.status}`);
+
         const json = await res.json();
-        const parsed = SearchResponseSchema.safeParse(json);
-        if (parsed.success) {
-          setItems(parsed.data.items);
-          setOpen(true);
-          setActiveIndex(parsed.data.items.length ? 0 : -1);
+
+        if (json && Array.isArray(json.items)) {
+          setItems(json.items);
+          setIsOpen(true);
+          setActiveIndex(json.items.length ? 0 : -1);
         } else {
           setItems([]);
-          setOpen(false);
+          setIsOpen(false);
         }
       } catch (err: any) {
-        if (err?.name !== "AbortError") {
+        if (err.name !== "AbortError") {
           setItems([]);
-          setOpen(false);
+          setIsOpen(false);
+          console.error("Search fetch error:", err);
         }
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
-    })();
-  }, [debouncedQ, api, minChars]);
+    };
 
-  const navigateTo = (it: SearchItem) => {
-    const encoded = safeEncodeSegment(it.id);
-    const href = it.kind === "professor" ? `/professors/${encoded}` : `/classes/${encoded}`;
-    router.push(href);
+    fetchSearchResults();
+  }, [debouncedQuery, apiBaseUrl, minChars]);
+
+  /**
+   * Navigates to the detail page for a given search item using standard browser navigation.
+   */
+  const navigateToItem = (item: SearchItem) => {
+    const encodedId = safeEncodeSegment(item.id);
+
+    window.location.href =
+      item.kind === "professor" ? `/professors/${encodedId}` : `/classes/${encodedId}`;
   };
 
-  const submitOrGo = () => {
-    const query = q.trim();
-    if (items[0]) {
-      navigateTo(items[0]);
-      setOpen(false);
-      return;
+  /**
+   * Handles form submission via Enter key or button click.
+   * Navigates to the first result, a specific class page, or a general search page.
+   */
+  const handleSubmit = () => {
+    const trimmedQuery = query.trim();
+    // If there's an active search result, navigate to it.
+    if (items[activeIndex]) {
+      navigateToItem(items[activeIndex]);
     }
-    if (looksLikeClassCode(query)) {
-      router.push(`/classes/${safeEncodeSegment(normalizeClassCode(query))}`);
-    } else if (query.length >= minChars) {
-      router.push(`/search?q=${safeEncodeSegment(query)}`);
+    // Otherwise, check if the query looks like a class code.
+    else if (looksLikeClassCode(trimmedQuery)) {
+      window.location.href = `/classes/${safeEncodeSegment(normalizeClassCode(trimmedQuery))}`;
     }
-    setOpen(false);
+    // Finally, fall back to a general search page.
+    else if (trimmedQuery.length >= minChars) {
+      window.location.href = `/search?q=${safeEncodeSegment(trimmedQuery)}`;
+    }
+    setIsOpen(false);
   };
 
-  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (!open || !items.length) {
+  /**
+   * Handles keyboard navigation within the search input.
+   */
+  const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+    // Handle Enter key for submission when dropdown is closed.
+    if (!isOpen || !items.length) {
       if (e.key === "Enter") {
         e.preventDefault();
-        submitOrGo();
+        handleSubmit();
       }
       return;
     }
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((i) => (i + 1) % items.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((i) => (i - 1 + items.length) % items.length);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      const it = items[activeIndex] ?? items[0];
-      if (it) {
-        navigateTo(it);
-        setOpen(false);
-      }
-    } else if (e.key === "Escape") {
-      setOpen(false);
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex((prev) => (prev + 1) % items.length);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (items[activeIndex]) {
+          navigateToItem(items[activeIndex]);
+          setIsOpen(false);
+        }
+        break;
+      case "Escape":
+        setIsOpen(false);
+        break;
     }
   };
 
   return (
-    <div className={cx("relative", className)} ref={wrapRef}>
-      {/* ---- OLD LOOK INPUT WRAPPER ---- */}
+    <div className={cx("relative", className)} ref={wrapperRef}>
       <div className="relative">
-        {/* left search icon (same as old) */}
         <svg
           aria-hidden="true"
           className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2"
           viewBox="0 0 24 24"
-          fill="none"
           stroke="currentColor"
           strokeWidth="2"
         >
@@ -187,88 +238,104 @@ export default function SearchBox({
           <path d="M20 20l-3.5-3.5" />
         </svg>
 
-        {/* input (exact old spacings: px-12 py-3 pr-32 text-base) */}
         <input
           id="nav-search"
           type="search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onFocus={() => items.length && setOpen(true)}
-          onKeyDown={onKeyDown}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => items.length && setIsOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="Search professors or classes…"
           autoComplete="off"
           spellCheck={false}
-          className={cx(
-            "border-border bg-card text-foreground ring-brand placeholder:text-muted-foreground",
-            "w-full rounded-full border px-12 py-3 pr-32 text-base shadow-sm",
-            "focus:border-[var(--brand)] focus:ring-1 focus:outline-none",
-          )}
+          className="border-border bg-card text-foreground ring-brand placeholder:text-muted-foreground w-full rounded-full border px-12 py-3 pr-32 text-base shadow-sm focus:border-[var(--brand)] focus:ring-1 focus:outline-none"
           aria-autocomplete="list"
-          aria-expanded={open}
+          aria-expanded={isOpen}
           aria-controls="nav-search-listbox"
         />
 
-        {/* right submit button (same size/placement) */}
         <button
           type="button"
-          onClick={submitOrGo}
+          onClick={handleSubmit}
           className="hover:bg-brand-darker ring-brand absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-[var(--brand)] px-5 py-2 text-sm font-medium text-[var(--brand-contrast)] focus:ring-2 focus:outline-none"
         >
-          {loading ? "Searching…" : "Search"}
+          {isLoading ? "Searching…" : "Search"}
         </button>
       </div>
 
-      {/* ---- DROPDOWN ---- */}
-      {open && (items.length > 0 || q.trim().length >= minChars) && (
+      {/* --- Dropdown Results --- */}
+      {isOpen && (
         <div
           role="listbox"
           id="nav-search-listbox"
           className="border-border bg-card absolute right-0 left-0 mt-2 max-h-[70vh] overflow-auto rounded-xl border p-1 shadow-lg"
         >
-          {items.length === 0 ? (
-            <div className="text-muted-foreground px-3 py-2 text-sm">
-              {loading ? "Searching…" : "No results"}
-            </div>
+          {items.length > 0 ? (
+            items.map((item, idx) => (
+              <SearchResultItem
+                key={`${item.kind}-${item.id}`}
+                item={item}
+                isActive={idx === activeIndex}
+                onClick={() => setIsOpen(false)}
+                onMouseEnter={() => setActiveIndex(idx)}
+              />
+            ))
           ) : (
-            items.map((it, idx) => {
-              const encoded = safeEncodeSegment(it.id);
-              const href =
-                it.kind === "professor" ? `/professors/${encoded}` : `/classes/${encoded}`;
-              return (
-                <Link
-                  key={`${it.kind}-${it.id}`}
-                  href={href}
-                  onClick={() => setOpen(false)}
-                  className={cx(
-                    "border-border hover:bg-muted/70 focus:bg-muted/70 block rounded-lg border p-3 transition outline-none",
-                    idx === activeIndex && "bg-muted/70",
-                  )}
-                  role="option"
-                  aria-selected={idx === activeIndex}
-                  onMouseEnter={() => setActiveIndex(idx)}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium">{it.title}</div>
-                      <div className="text-muted-foreground truncate text-xs">{it.subtitle}</div>
-                    </div>
-                    {it.kind === "professor" && typeof it.overall === "number" ? (
-                      <div className="bg-brand grid h-9 w-9 place-items-center rounded-md text-xs font-bold text-[var(--brand-contrast)]">
-                        {it.overall.toFixed(1)}
-                      </div>
-                    ) : it.kind === "class" && typeof it.difficulty === "number" ? (
-                      <div className="text-right">
-                        <div className="text-muted-foreground text-[10px]">Difficulty</div>
-                        <div className="text-xs font-semibold">{it.difficulty.toFixed(1)}/5</div>
-                      </div>
-                    ) : null}
-                  </div>
-                </Link>
-              );
-            })
+            <div className="text-muted-foreground px-3 py-2 text-sm">
+              {isLoading ? "Searching…" : "No results"}
+            </div>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+function SearchResultItem({
+  item,
+  isActive,
+  onClick,
+  onMouseEnter,
+}: {
+  item: SearchItem;
+  isActive: boolean;
+  onClick: () => void;
+  onMouseEnter: () => void;
+}) {
+  const encodedId = safeEncodeSegment(item.id);
+  const href = item.kind === "professor" ? `/professors/${encodedId}` : `/classes/${encodedId}`;
+
+  return (
+    <a
+      href={href}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      role="option"
+      aria-selected={isActive}
+      className={cx(
+        "border-border hover:bg-muted/70 focus:bg-muted/70 block rounded-lg border p-3 transition outline-none",
+        isActive && "bg-muted/70",
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        {/* Left side: Title and Subtitle */}
+        <div className="min-w-0">
+          <div className="truncate text-sm font-medium">{item.title}</div>
+          <div className="text-muted-foreground truncate text-xs">{item.subtitle}</div>
+        </div>
+
+        {/* Right side: Professor rating or Class difficulty */}
+        {item.kind === "professor" && typeof item.overall === "number" ? (
+          <div className="bg-brand grid h-9 w-9 place-items-center rounded-md text-xs font-bold text-[var(--brand-contrast)]">
+            {item.overall.toFixed(1)}
+          </div>
+        ) : item.kind === "class" && typeof item.difficulty === "number" ? (
+          <div className="text-right">
+            <div className="text-muted-foreground text-[10px]">Difficulty</div>
+            <div className="text-xs font-semibold">{item.difficulty.toFixed(1)}/5</div>
+          </div>
+        ) : null}
+      </div>
+    </a>
   );
 }

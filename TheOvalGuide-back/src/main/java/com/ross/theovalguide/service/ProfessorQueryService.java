@@ -82,7 +82,7 @@ public class ProfessorQueryService {
                 p.getTotalRatings(),
                 buckets,
                 tags,
-                null,   // summary (optional, later)
+                null,   // summary optional, later
                 reviewDtos
         );
     }

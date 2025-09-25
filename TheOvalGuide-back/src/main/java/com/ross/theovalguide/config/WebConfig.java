@@ -4,16 +4,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * Handles the global CORS (Cross-Origin Resource Sharing) configuration.
+ */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        configureMapping(registry.addMapping("/api/**"));
-        configureMapping(registry.addMapping("/auth/**"));
-    }
-
-    private void configureMapping(CorsRegistry.CorsRegistration registration) {
-        registration
+        // This applies the CORS rules to all endpoints in your application
+        registry.addMapping("/**")
                 .allowedOrigins(
                         "http://localhost:3000",
                         "http://localhost:5173"
@@ -21,6 +21,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
-                .maxAge(1800); // 30 minutes
+                .maxAge(3600); // Cache pre-flight response for 1 hour
     }
 }

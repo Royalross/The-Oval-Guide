@@ -6,8 +6,8 @@ import { useEffect } from "react";
 function ColorSchemeSync() {
   const { theme, resolvedTheme } = useTheme();
   useEffect(() => {
-    const t = (theme ?? resolvedTheme) === "dark" ? "dark" : "light";
-    document.documentElement.style.colorScheme = t;
+    document.documentElement.style.colorScheme =
+      (theme ?? resolvedTheme) === "dark" ? "dark" : "light";
   }, [theme, resolvedTheme]);
   return null;
 }

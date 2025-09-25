@@ -14,7 +14,7 @@ public interface CourseClassRepository extends JpaRepository<CourseClass, UUID> 
 
     Optional<CourseClass> findByCodeIgnoreCase(String code);
 
-    // Fuzzy search used by SearchService (handles code/title/department/university)
+    // Fuzzy search used by SearchService, handles code/title/department/university
     @Query("""
               select c from CourseClass c
               where
